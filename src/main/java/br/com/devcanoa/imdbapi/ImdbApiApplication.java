@@ -4,15 +4,18 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.json.JacksonJsonParser;
 
+import java.awt.*;
+import java.io.*;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.*;
+import java.util.List;
 
 @SpringBootApplication
 public class ImdbApiApplication {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         SpringApplication.run(ImdbApiApplication.class, args);
 
         HttpClient client = HttpClient.newHttpClient();
@@ -28,6 +31,10 @@ public class ImdbApiApplication {
         List<Object> moviesList = getMoviesList(response);
 
         List<Movie> movies = getListMoviesObjects(moviesList);
+
+        PrintWriter printWriter = new PrintWriter("source.html");
+        new HTMLGenerator(printWriter).generate(movies);
+        printWriter.close();
     }
 
     private static List<Object> getMoviesList(String response) {
