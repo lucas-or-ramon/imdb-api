@@ -4,14 +4,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.json.JacksonJsonParser;
 
-import javax.management.Attribute;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.*;
-import java.util.jar.Attributes;
-import java.util.stream.Collectors;
 
 @SpringBootApplication
 public class ImdbApiApplication {
@@ -30,23 +27,27 @@ public class ImdbApiApplication {
 
         List<Object> moviesList = getMoviesList(response);
 
-        List<String> titles = getListAttributes("title", moviesList);
-        List<String> urlImages = getListAttributes("image", moviesList);
-        List<String> rating = getListAttributes("imDbRating", moviesList);
-        List<String> years = getListAttributes("year", moviesList);
-
-//        System.out.println(objects);
-    }
-
-    private static List<String> getListAttributes(String type, List<Object> moviesList) {
-        List<String> strings = moviesList.stream().map(movie -> movie.toString().split(type+"=")[1].split(",")[0]).collect(Collectors.toList());
-        return strings;
+        List<Movie> movies = getListMoviesObjects(moviesList);
     }
 
     private static List<Object> getMoviesList(String response) {
         JacksonJsonParser jsonParser = new JacksonJsonParser();
         Map<String, Object> objects = jsonParser.parseMap(response);
-        List<Object> moviesList = (ArrayList) objects.get("items");
-        return moviesList;
+        return (ArrayList) objects.get("items");
+    }
+
+    private static List<Movie> getListMoviesObjects(List<Object> moviesList) {
+        List<Movie> movies = new ArrayList<>();
+        moviesList.forEach(movie -> movies.add(new Movie(
+                getAttribute("title", movie),
+                getAttribute("image", movie),
+                getAttribute("imDbRating", movie),
+                getAttribute("year", movie))));
+
+        return movies;
+    }
+
+    private static String getAttribute(String type, Object movie) {
+        return movie.toString().split(type + "=")[1].split(",")[0];
     }
 }
